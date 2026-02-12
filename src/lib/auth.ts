@@ -117,8 +117,8 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 90 * 24 * 60 * 60, // 90 days
   },
-
-
   secret: process.env.NEXTAUTH_SECRET,
+  // trustHost is required for Vercel deployment to work correctly with custom domains or potential proxy issues
+  // @ts-ignore
   trustHost: true,
 };
