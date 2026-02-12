@@ -5,7 +5,24 @@ import User from '../../backend/models/user.model';
 import { UserRole } from '../../backend/types';
 import mongoose from 'mongoose';
 
+// Define cookie settings based on environment
+const useSecureCookies = process.env.NODE_ENV === 'production';
+const cookiePrefix = useSecureCookies ? '__Secure-' : '';
+const hostPrefix = useSecureCookies ? '__Host-' : '';
+
 export const authOptions: NextAuthOptions = {
+  // Explicitly define cookie names to ensure consistency
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: useSecureCookies,
+      },
+    },
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
