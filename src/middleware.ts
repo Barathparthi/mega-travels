@@ -1,81 +1,75 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-// Public routes that should never require authentication
-const publicRoutes = [
-  '/manifest.json',
-  '/sw.js',
-  '/api/auth',
-  '/login',
-  '/_next',
-  '/icons',
-  '/screenshots',
-  '/favicon.ico',
-];
+export async function middleware(req: NextRequest) {
+  const path = req.nextUrl.pathname;
 
-function isPublicRoute(path: string): boolean {
-  return publicRoutes.some(route => path.startsWith(route) || path === route);
-}
+  // Define paths that don't need authentication
+  const publicPaths = [
+    '/login',
+    '/api/auth',
+    '/manifest.json',
+    '/sw.js',
+    '/favicon.ico',
+    '/icons',
+    '/layout',
+    '/screenshots'
+  ];
 
-// Create the protected middleware using withAuth
-const protectedMiddleware = withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
+  // Check if it's a public path or a static asset
+  const isPublic =
+    publicPaths.some(p => path.startsWith(p)) ||
+    path.startsWith('/_next') ||
+    path.includes('.'); // Simple check for files
 
-    // Admin routes protection
-    if (path.startsWith('/admin')) {
-      if (token?.role !== 'admin') {
-        return NextResponse.redirect(new URL('/login', req.url));
-      }
-    }
-
-    // Driver routes protection
-    if (path.startsWith('/driver')) {
-      if (token?.role !== 'driver') {
-        return NextResponse.redirect(new URL('/login', req.url));
-      }
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => {
-        // For protected routes, require token
-        return !!token;
-      },
-    },
-  }
-);
-
-// Main middleware that checks public routes first
-export default function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-
-  // Early return for public routes - completely bypass withAuth
-  if (isPublicRoute(path)) {
+  if (isPublic) {
     return NextResponse.next();
   }
 
-  // For protected routes, use withAuth middleware
-  return protectedMiddleware(request);
+  // Get the token using the secret
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET
+  });
+
+  // Debug log (remove in final production if too noisy, but helpful now)
+  // console.log(`[Middleware] ${path} - Token: ${!!token} - Role: ${token?.role}`);
+
+  // If no token and trying to access a protected route
+  if (!token) {
+    const url = new URL('/login', req.url);
+    url.searchParams.set('callbackUrl', path);
+    return NextResponse.redirect(url);
+  }
+
+  // Admin routes protection
+  if (path.startsWith('/admin')) {
+    if (token.role !== 'admin') {
+      // Redirect to home or login if role mismatch
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+  }
+
+  // Driver routes protection
+  if (path.startsWith('/driver')) {
+    if (token.role !== 'driver') {
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * - api/auth (handled in code, but good to exclude from matcher too if possible)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - manifest.json (PWA manifest)
-     * - sw.js (service worker)
-     * - icons (icon files)
-     * - screenshots (screenshot files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|screenshots).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
   ],
 };

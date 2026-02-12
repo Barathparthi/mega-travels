@@ -118,5 +118,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 90 * 24 * 60 * 60, // 90 days
   },
 
+
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
 };
