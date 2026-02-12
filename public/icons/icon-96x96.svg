@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="96" height="96" rx="14.399999999999999" fill="url(#grad)"/>
+  
+  <!-- Car icon -->
+  <g transform="scale(0.1875)">
+    <!-- Car body -->
+    <path d="M 100 300 L 150 200 L 350 200 L 400 300 Z" fill="white"/>
+    <!-- Car base -->
+    <rect x="80" y="300" width="340" height="80" fill="white"/>
+    <!-- Wheels -->
+    <circle cx="160" cy="380" r="40" fill="#1e293b"/>
+    <circle cx="340" cy="380" r="40" fill="#1e293b"/>
+    <!-- Wheel centers -->
+    <circle cx="160" cy="380" r="20" fill="#64748b"/>
+    <circle cx="340" cy="380" r="20" fill="#64748b"/>
+    <!-- Windows -->
+    <rect x="170" y="220" width="70" height="60" fill="#93c5fd"/>
+    <rect x="260" y="220" width="70" height="60" fill="#93c5fd"/>
+  </g>
+  
+  <!-- M letter -->
+  <text x="50%" y="65%" font-family="Arial, sans-serif" font-size="28.799999999999997" 
+        font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">M</text>
+</svg>
