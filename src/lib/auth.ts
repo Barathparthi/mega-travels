@@ -37,17 +37,13 @@ export const authOptions: NextAuthOptions = {
         const phoneDigits = normalizedInput.replace(/\D/g, '');
         const isPhoneNumber = /^\d{10}$/.test(phoneDigits);
 
-        console.log(`[AUTH DEBUG] Login attempt for: ${normalizedInput} (Is Phone: ${isPhoneNumber})`);
-
         let user;
         try {
           if (isPhoneNumber) {
             // Login with phone number - use normalized digits
-            console.log(`[AUTH DEBUG] Looking up user by phone: ${phoneDigits}`);
             user = await User.findOne({ phone: phoneDigits }).select('+password');
           } else {
             // Login with email - use normalized lowercase
-            console.log(`[AUTH DEBUG] Looking up user by email: ${normalizedInput}`);
             user = await User.findOne({ email: normalizedInput }).select('+password');
           }
         } catch (queryError) {
@@ -56,14 +52,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user) {
-          console.log(`[AUTH DEBUG] User not found for input: ${isPhoneNumber ? phoneDigits : normalizedInput}`);
           throw new Error(isPhoneNumber ? 'Invalid phone number or password' : 'Invalid email or password');
-        } else {
-          console.log(`[AUTH DEBUG] User found: ${user.email} (${user._id})`);
         }
 
         if (!user.isActive) {
-          console.log(`[AUTH DEBUG] User inactive: ${user._id}`);
           throw new Error('Your account is inactive. Please contact admin.');
         }
 
@@ -74,16 +66,13 @@ export const authOptions: NextAuthOptions = {
 
         let isPasswordValid;
         try {
-          console.log(`[AUTH DEBUG] Verifying password for user: ${user._id}`);
           isPasswordValid = await user.comparePassword(credentials.password);
-          console.log(`[AUTH DEBUG] Password valid: ${isPasswordValid}`);
         } catch (passwordError) {
           console.error('❌ Password comparison error:', passwordError);
           throw new Error('Authentication error. Please try again.');
         }
 
         if (!isPasswordValid) {
-          console.log(`[AUTH DEBUG] Invalid password for user: ${user._id}`);
           throw new Error(isPhoneNumber ? 'Invalid phone number or password' : 'Invalid email or password');
         }
 
@@ -128,17 +117,6 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 90 * 24 * 60 * 60, // 90 days
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 90 * 24 * 60 * 60, // 90 days
-      },
-    },
-  },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
