@@ -33,8 +33,13 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET
   });
 
-  // Debug log (remove in final production if too noisy, but helpful now)
-  // console.log(`[Middleware] ${path} - Token: ${!!token} - Role: ${token?.role}`);
+  // Debug log for production issues
+  console.log(`[Middleware] Testing path: ${path}`);
+  console.log(`[Middleware] NEXTAUTH_SECRET defined: ${!!process.env.NEXTAUTH_SECRET}`);
+  console.log(`[Middleware] Token found: ${!!token}`);
+  if (token) {
+    console.log(`[Middleware] User Role: ${token.role}`);
+  }
 
   // If no token and trying to access a protected route
   if (!token) {
